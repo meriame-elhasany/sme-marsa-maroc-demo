@@ -1,0 +1,108 @@
+/* ==========================================================================
+   STYLE D'IMPRESSION PDF / RAPPORT OFFICIEL
+   Appel d'Offres Marsa Maroc 12/DEPA/2026 — Port d'Agadir
+   ========================================================================== */
+
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt;
+  }
+
+  /* Masquer les éléments interactifs et de navigation */
+  .demo-banner,
+  .topbar,
+  .sidebar,
+  .fault-injector-bar,
+  .btn,
+  .modal-backdrop,
+  .app-footer,
+  .no-print {
+    display: none !important;
+  }
+
+  .main-layout {
+    display: block !important;
+    min-height: auto !important;
+  }
+
+  .content-area {
+    padding: 0 !important;
+    overflow: visible !important;
+    background: transparent !important;
+  }
+
+  /* En-tête de rapport imprimé */
+  .print-header {
+    display: block !important;
+    border-bottom: 2px solid #0284c7;
+    padding-bottom: 15px;
+    margin-bottom: 25px;
+  }
+
+  .print-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .print-title {
+    font-size: 18pt;
+    font-weight: bold;
+    color: #0f172a;
+  }
+
+  .print-subtitle {
+    font-size: 11pt;
+    color: #475569;
+  }
+
+  .print-meta {
+    font-size: 9pt;
+    color: #64748b;
+    margin-top: 5px;
+  }
+
+  /* Cartes et tableaux en impression */
+  .card, .substation-card, .table-responsive {
+    background-color: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+  }
+
+  .scada-table {
+    border: 1px solid #94a3b8 !important;
+  }
+
+  .scada-table th {
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
+    border-bottom: 1px solid #94a3b8 !important;
+  }
+
+  .scada-table td {
+    color: #1e293b !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+  }
+
+  /* Mention d'intégrité en bas de page */
+  .print-footer {
+    display: block !important;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    font-size: 8pt;
+    color: #64748b;
+    text-align: center;
+    border-top: 1px solid #cbd5e1;
+    padding-top: 5px;
+  }
+}
+
+.print-header,
+.print-footer {
+  display: none;
+}

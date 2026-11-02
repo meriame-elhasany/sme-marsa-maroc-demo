@@ -1,0 +1,15 @@
+# Dotfiles and system caches in /root
+.*
+!.gitignore
+!.nojekyll
+
+# Dependencies & temporary files
+node_modules/
+.env*
+.DS_Store
+*.log
+tmp/
+temp/
+
+# Confidential source tender docs
+docs-sources/

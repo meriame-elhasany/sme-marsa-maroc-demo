@@ -1,0 +1,269 @@
+/* ==========================================================================
+   THÈME SCADA / GTC — INDICATEURS INDUSTRIELS & CODES COULEURS
+   Conforme aux pratiques de supervision électrique CEI / ISO
+   ========================================================================== */
+
+/* Voyants d'état (LEDs SCADA) */
+.scada-led {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+  transition: all 0.3s ease;
+}
+
+.scada-led.ok {
+  background-color: var(--status-ok);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.7);
+}
+
+.scada-led.warning {
+  background-color: var(--status-warning);
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.7);
+  animation: scada-pulse 2s infinite;
+}
+
+.scada-led.critical {
+  background-color: var(--status-critical);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.9);
+  animation: scada-flash 1s infinite;
+}
+
+.scada-led.offline {
+  background-color: var(--status-offline);
+  box-shadow: none;
+}
+
+@keyframes scada-flash {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes scada-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+/* Badges de Fraîcheur des Données */
+.freshness-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.freshness-badge.realtime {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.freshness-badge.delayed {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.freshness-badge.stale {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+/* Badge de Contrôle Anti-Double Comptage */
+.anti-doublon-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background-color: rgba(6, 182, 212, 0.12);
+  border: 1px solid rgba(6, 182, 212, 0.35);
+  color: #22d3ee;
+  border-radius: var(--radius-md);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Indicateur de Mesure Industrielle */
+.scada-metric {
+  display: flex;
+  flex-direction: column;
+}
+
+.scada-metric-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.scada-metric-val {
+  font-family: var(--font-family-mono);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.scada-metric-unit {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-left: 3px;
+}
+
+/* Cartes des Postes Électriques (Poste 1 à 6) */
+.substation-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.substation-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--marsa-blue);
+}
+
+.substation-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background-color: var(--status-ok);
+}
+
+.substation-card.warning::before {
+  background-color: var(--status-warning);
+}
+
+.substation-card.critical::before {
+  background-color: var(--status-critical);
+}
+
+.substation-card.offline::before {
+  background-color: var(--status-offline);
+}
+
+.substation-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.substation-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.substation-zone {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.substation-metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background-color: var(--bg-input);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+/* Barre d'Injection de Pannes (Démonstration) */
+.fault-injector-bar {
+  background: linear-gradient(135deg, #1e1b4b, #312e81);
+  border: 1px solid #4338ca;
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  box-shadow: var(--shadow-md);
+}
+
+.fault-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #e0e7ff;
+}
+
+.fault-buttons-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.btn-fault {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.btn-fault:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.btn-fault.active {
+  background-color: #ef4444;
+  border-color: #f87171;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
+}
+
+.btn-fault.restore {
+  background-color: #10b981;
+  border-color: #34d399;
+}
+.btn-fault.restore:hover {
+  background-color: #059669;
+}
+
+/* Synoptique SVG & Couches */
+.architecture-svg-container {
+  width: 100%;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+}
+
+.arch-layer {
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.arch-layer:hover rect {
+  stroke-width: 3;
+  stroke: var(--marsa-blue);
+}

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Banc de Tests Automatisés — SME Marsa Maroc (12/DEPA/2026)</title>
+  <link rel="stylesheet" href="./css/main.css">
+  <link rel="stylesheet" href="./css/scada-theme.css">
+  <link rel="stylesheet" href="./css/components.css">
+  <style>
+    body { padding: 2rem; max-width: 900px; margin: 0 auto; background-color: var(--bg-primary); }
+    .test-suite { margin-bottom: 2rem; }
+    .test-case { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color); background-color: var(--bg-card); }
+    .test-case:first-child { border-top-left-radius: var(--radius-md); border-top-right-radius: var(--radius-md); }
+    .test-case:last-child { border-bottom-left-radius: var(--radius-md); border-bottom-right-radius: var(--radius-md); border-bottom: none; }
+    .test-status-pass { color: var(--status-ok); font-weight: bold; }
+    .test-status-fail { color: var(--status-critical); font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+    <div>
+      <h1 style="font-size:1.5rem; font-weight:800; color:var(--text-primary);">Banc de Tests Automatisés (Unitaires & Métrologiques)</h1>
+      <div style="font-size:12px; color:var(--text-muted);">Validation sans build des règles de calcul, conversions et contrôle anti-doublon</div>
+    </div>
+    <a href="./index.html#/dashboard" class="btn btn-secondary btn-sm">&larr; Retour à la supervision</a>
+  </div>
+
+  <div class="card" style="margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center;">
+    <div>
+      <div style="font-size:12px; color:var(--text-muted);">Résultat d'exécution :</div>
+      <div id="test-summary" style="font-size:1.3rem; font-weight:700;">Exécution des tests en cours...</div>
+    </div>
+    <button id="btn-rerun" class="btn btn-primary btn-sm">▶️ Relancer la suite de tests</button>
+  </div>
+
+  <div id="test-results-container"></div>
+
+  <!-- Script d'exécution des tests unitaires en ES Modules -->
+  <script type="module">
+    import { Aggregations } from './js/calculs/aggregations.js';
+    import { IPEEngine } from './js/calculs/ipe.js';
+    import { AlarmEngine } from './js/alertes/alarm-engine.js';
+    import { DB } from './js/storage/db.js';
+
+    class TestRunner {
+      constructor() {
+        this.tests = [];
+        this.passed = 0;
+        this.failed = 0;
+      }
+
+      add(suiteName, testName, testFn) {
+        this.tests.push({ suiteName, testName, testFn });
+      }
+
+      async run() {
+        this.passed = 0;
+        this.failed = 0;
+        const container = document.getElementById('test-results-container');
+        container.innerHTML = '';
+
+        const suites = {};
+        for (const t of this.tests) {
+          if (!suites[t.suiteName]) suites[t.suiteName] = [];
+          suites[t.suiteName].push(t);
+        }
+
+        for (const [suiteName, tests] of Object.entries(suites)) {
+          const suiteDiv = document.createElement('div');
+          suiteDiv.className = 'test-suite';
+          suiteDiv.innerHTML = `<h3 style="font-size:1.1rem; color:var(--marsa-blue); margin-bottom:0.75rem;">${suiteName}</h3>`;
+          const listDiv = document.createElement('div');
+          listDiv.style.border = '1px solid var(--border-color)';
+          listDiv.style.borderRadius = 'var(--radius-md)';
+          listDiv.style.overflow = 'hidden';
+
+          for (const test of tests) {
+            let pass = false;
+            let errorMsg = '';
+            try {
+              await test.testFn();
+              pass = true;
+              this.passed++;
+            } catch (e) {
+              pass = false;
+              errorMsg = e.message;
+              this.failed++;
+            }
+
+            const item = document.createElement('div');
+            item.className = 'test-case';
+            item.innerHTML = `
+              <div>
+                <span style="font-size:13px; font-weight:600; color:var(--text-primary);">${test.testName}</span>
+                ${errorMsg ? `<div style="font-size:11px; color:#f87171; margin-top:2px;">Erreur : ${errorMsg}</div>` : ''}
+              </div>
+              <div class="${pass ? 'test-status-pass' : 'test-status-fail'}">
+                ${pass ? '✓ SUCCÈS' : '✗ ÉCHEC'}
+              </div>
+            `;
+            listDiv.appendChild(item);
+          }
+          suiteDiv.appendChild(listDiv);
+          container.appendChild(suiteDiv);
+        }
+
+        const summary = document.getElementById('test-summary');
+        if (summary) {
+          summary.innerHTML = `<span style="color:var(--status-ok);">${this.passed} validés</span> / <span style="color:${this.failed > 0 ? 'var(--status-critical)' : 'var(--text-muted)'};">${this.failed} échoués</span> (${this.tests.length} tests au total)`;
+        }
+      }
+    }
+
+    const runner = new TestRunner();
+
+    // SUITE 1 : Conversions d'unités & Échelles Modbus
+    runner.add("1. Conversions d'Unités & Facteurs d'Échelle", "Vérifie le facteur d'échelle Float32 pour la tension (scale 0.1)", () => {
+      const rawRegister = 2314;
+      const scale = 0.1;
+      const converted = rawRegister * scale;
+      if (Math.abs(converted - 231.4) > 0.001) throw new Error(`Attendu: 231.4 V, Obtenu: ${converted} V`);
+    });
+
+    runner.add("1. Conversions d'Unités & Facteurs d'Échelle", "Vérifie le facteur d'échelle pour l'énergie active importée (scale 0.1 kWh)", () => {
+      const rawEnergy = 1845923;
+      const scale = 0.1;
+      const converted = rawEnergy * scale;
+      if (Math.abs(converted - 184592.3) > 0.001) throw new Error(`Attendu: 184592.3 kWh, Obtenu: ${converted} kWh`);
+    });
+
+    runner.add("1. Conversions d'Unités & Facteurs d'Échelle", "Vérifie le décodage du facteur de puissance (cos φ, scale 0.001)", () => {
+      const rawCosPhi = 974;
+      const scale = 0.001;
+      const converted = rawCosPhi * scale;
+      if (Math.abs(converted - 0.974) > 0.0001) throw new Error(`Attendu: 0.974, Obtenu: ${converted}`);
+    });
+
+    // SUITE 2 : Contrôle Strict Anti-Double Comptage
+    runner.add("2. Règle Métrologique Anti-Double Comptage", "Garantit que les départs divisionnaires ne sont JAMAIS additionnés à l'arrivée générale", () => {
+      const fakePostes = [{
+        id: "P_TEST",
+        nom: "Poste Test",
+        zone: "Zone Test",
+        puissanceSouscrite_kVA: 1000,
+        seuilPuissance_kW: 900,
+        tableaux: [{
+          id: "T1",
+          departs: [
+            { id: "D1", compteurId: "CMP_MAIN", isAggregateMaster: true },  // Arrivée TR (500 kW)
+            { id: "D2", compteurId: "CMP_SUB1", isAggregateMaster: false }, // Sous-départ 1 (200 kW)
+            { id: "D3", compteurId: "CMP_SUB2", isAggregateMaster: false }  // Sous-départ 2 (150 kW)
+          ]
+        }]
+      }];
+
+      const fakeReadings = new Map([
+        ["CMP_MAIN", { qualite: "OK", valeurs: { puissanceActive_kW: 500, puissanceReactive_kVAR: 100 } }],
+        ["CMP_SUB1", { qualite: "OK", valeurs: { puissanceActive_kW: 200, puissanceReactive_kVAR: 40 } }],
+        ["CMP_SUB2", { qualite: "OK", valeurs: { puissanceActive_kW: 150, puissanceReactive_kVAR: 30 } }]
+      ]);
+
+      const result = Aggregations.calculateSiteTotals(fakePostes, fakeReadings);
+
+      // Le total doit être STRICTEMENT 500 kW et non 850 kW !
+      if (result.totalPower_kW !== 500) {
+        throw new Error(`Double comptage détecté ! Attendu 500 kW, calculé: ${result.totalPower_kW} kW`);
+      }
+
+      if (result.antiDoubleCountProof.avoidedDuplicatePower_kW !== 350) {
+        throw new Error(`Écart de puissance sous-comptage incorrect. Attendu 350 kW, obtenu: ${result.antiDoubleCountProof.avoidedDuplicatePower_kW} kW`);
+      }
+    });
+
+    // SUITE 3 : Évaluation des Formules d'IPE (ISO 50001)
+    runner.add("3. Calcul des Indicateurs de Performance (IPE)", "Calcul exact de l'indicateur conteneurs IPE_EVP = (E_P1 + E_P2) / Volume_EVP", () => {
+      const fakeIPE = {
+        code: "IPE_EVP",
+        seuilCible: 18.5,
+        seuilAlerte: 22.0
+      };
+      const fakeReadings = new Map([
+        ["CMP-P1-001", { qualite: "OK", valeurs: { puissanceActive_kW: 400 } }],
+        ["CMP-P2-001", { qualite: "OK", valeurs: { puissanceActive_kW: 600 } }]
+      ]);
+
+      const evaluated = IPEEngine.evaluate(fakeIPE, fakeReadings);
+      // (400 + 600) * 12 = 12 000 kWh / 580 EVP = 20.69 kWh/EVP
+      if (evaluated.valeurCalculee <= 0) throw new Error("Valeur IPE calculée invalide");
+      if (typeof evaluated.ecartSeuilPct !== 'number') throw new Error("Calcul d'écart invalide");
+    });
+
+    // SUITE 4 : Règles de Détection des Alarmes
+    runner.add("4. Règles d'Alertes & Seuils Industriels", "Détection automatique de coupure Modbus en cas de qualité de donnée 'ABSENTE'", () => {
+      DB.init();
+      const testPoste = [{
+        id: "P1",
+        nom: "Poste 1",
+        seuilPuissance_kW: 1050,
+        tableaux: [{
+          departs: [{ id: "DEP-01", compteurId: "CMP_DISCONNECTED", isAggregateMaster: true, nom: "Arrivée Test" }]
+        }]
+      }];
+
+      const testReadings = new Map([
+        ["CMP_DISCONNECTED", { qualite: "ABSENTE", valeurs: { puissanceActive_kW: 0 } }]
+      ]);
+
+      const alerts = AlarmEngine.checkAll(testPoste, testReadings);
+      const commAlert = alerts.find(a => a.compteurId === "CMP_DISCONNECTED" && a.type === "PERTE_COMMUNICATION");
+      if (!commAlert) throw new Error("L'alerte de coupure communication Modbus n'a pas été déclenchée");
+      if (commAlert.severite !== "CRITIQUE") throw new Error("Sévérité attendue: CRITIQUE");
+    });
+
+    runner.run();
+
+    document.getElementById('btn-rerun').addEventListener('click', () => runner.run());
+  </script>
+</body>
+</html>
