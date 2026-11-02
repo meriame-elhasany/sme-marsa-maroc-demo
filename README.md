@@ -8,9 +8,10 @@
 
 ## 🌐 Déploiement & Accès
 
-- **Hébergement GitHub Pages** : `https://{owner}.github.io/sme-marsa-maroc-demo/` (sera mis à jour après publication)
-- **Point d'entrée principal** : [`index.html`](./index.html)
-- **Banc de tests automatisés** : [`tests.html`](./tests.html)
+- **Hébergement GitHub Pages (Accès Direct)** : [https://meriame-elhasany.github.io/sme-marsa-maroc-demo/](https://meriame-elhasany.github.io/sme-marsa-maroc-demo/)
+- **Dépôt GitHub** : [https://github.com/meriame-elhasany/sme-marsa-maroc-demo](https://github.com/meriame-elhasany/sme-marsa-maroc-demo)
+- **Point d'entrée principal** : [`index.html`](https://meriame-elhasany.github.io/sme-marsa-maroc-demo/index.html)
+- **Banc de tests automatisés** : [`tests.html`](https://meriame-elhasany.github.io/sme-marsa-maroc-demo/tests.html)
 
 ---
 
